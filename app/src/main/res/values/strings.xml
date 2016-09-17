@@ -2,4 +2,7 @@
     <string name="app_name">Remote Camera Viewer</string>
     <string name="title_activity_remote_camera">Remote Camera Viewer</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_connecting">Connecting</string>
+    <string name="title_disconnected">Disconnected</string>
+    <string name="title_imageerror">Image Error</string>
 </resources>

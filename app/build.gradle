@@ -9,14 +9,19 @@ repositories {
 
 android {
     compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "19.1"
 
     defaultConfig {
         applicationId "edu.is"
-        minSdkVersion 19
-        targetSdkVersion 24
+        minSdkVersion 15
+        targetSdkVersion 19
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            moduleName "ImageProc"
+            stl "gnustl_shared"
+        }
     }
     buildTypes {
         release {
@@ -28,4 +33,5 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:19.1.0'
 }
