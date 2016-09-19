@@ -1,37 +1,79 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.model.application'
 
 repositories {
     jcenter()
-    flatDir {
-        dirs 'prebuilt-libs'
-    }
 }
 
-android {
-    compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
-    buildToolsVersion "19.1"
-
-    defaultConfig {
-        applicationId "edu.is"
-        minSdkVersion 15
-        targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
-
-        ndk {
-            moduleName "ImageProc"
-            stl "gnustl_shared"
+model {
+    repositories {
+        libs(PrebuiltLibraries) {
+            libturbojpeg {
+                headers.srcDir '/Users/peter/Documents/git/uni/is/android/libjpeg-turbo/target/include'
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file('/Users/peter/Documents/git/uni/is/android/libjpeg-turbo/target/lib/libturbojpeg.so')
+                }
+                binaries.withType(StaticLibraryBinary) {
+                    staticLibraryFile = file('/Users/peter/Documents/git/uni/is/android/libjpeg-turbo/target/lib/libturbojpeg.a')
+                }
+            }
         }
     }
-    buildTypes {
+
+    android {
+        compileSdkVersion 24
+        buildToolsVersion "24.0.2"
+
+        defaultConfig {
+            applicationId "edu.is"
+            minSdkVersion.apiLevel 15
+            targetSdkVersion.apiLevel 19
+            versionCode 1
+            versionName "1.0"
+
+            testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        }
+    }
+
+    android.ndk {
+        moduleName 'decompressor'
+        platformVersion 15
+        ldFlags.add('')
+        ldLibs.addAll(['log', 'jnigraphics'])
+        cppFlags.add('-I/Users/peter/Documents/git/uni/is/android/libjpeg-turbo/target/include')
+    }
+
+    android.productFlavors {
+        create("arm") {
+            ndk {
+                abiFilters.add("armeabi-v7a")
+            }
+        }
+    }
+
+    android.sources {
+        main {
+            jni {
+                dependencies {
+                    library "libturbojpeg" linkage "static"
+                }
+            }
+        }
+    }
+
+    android.buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles.add(file('proguard-rules.pro'))
         }
     }
+
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:19.1.0'
+    compile 'com.android.support:support-v4:24.1.1'
+    androidTestCompile 'com.android.support:support-annotations:24.1.1'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
 }
