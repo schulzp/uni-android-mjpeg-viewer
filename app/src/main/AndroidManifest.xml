@@ -3,7 +3,6 @@
     package="edu.is">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -12,21 +11,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MediaPlayerActivity"
-            android:icon="@drawable/ic_glass_logo"
-            android:label="@string/title_activity_remote_camera">
-        </activity>
-        <activity android:name=".MjpegActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
+            android:name=".ui.MultipartJpegActivity"
+            android:screenOrientation="landscape"
+            android:label="@string/title_activity_multipart_jpeg"
+            android:theme="@style/FullscreenTheme">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <meta-data
-                android:name="com.google.android.glass.VoiceTrigger"
-                android:resource="@xml/voice_trigger" />
+            <action android:name="android.intent.action.MAIN" />
         </activity>
     </application>
 

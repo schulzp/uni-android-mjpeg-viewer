@@ -7,13 +7,11 @@
 #include "decompressor.h"
 #include "turbojpeg.h"
 
-JNIEXPORT void JNICALL Java_edu_is_Decompressor_decompress(JNIEnv *env, jobject instance, jbyteArray source_, jint length, jobject target) {
-
-    jboolean copied;
+JNIEXPORT jboolean JNICALL Java_edu_is_Decompressor_decompress(JNIEnv *env, jobject instance, jbyteArray source_, jint length, jobject target) {
 
     LOGI("Decompressing");
 
-    jbyte *source = (*env)->GetByteArrayElements(env, source_, &copied);
+    jbyte *source = (*env)->GetDirectBufferAddress(env, source_);
 
     int jpegSubsamp, width, height, ret;
 
@@ -34,12 +32,12 @@ JNIEXPORT void JNICALL Java_edu_is_Decompressor_decompress(JNIEnv *env, jobject 
 
     LOGD("Width %d, Height: %d, Sub-Samples: %d", width, height, jpegSubsamp);
 
-    tjDecompress2(_jpegDecompressor, sourcePixelsPointer, length, targetPixelsPointer, width, 0/*pitch*/, height, TJPF_RGBX, TJFLAG_FASTDCT);
+    if (tjDecompress2(_jpegDecompressor, sourcePixelsPointer, length, targetPixelsPointer, width, 0/*pitch*/, height, TJPF_RGBX, TJFLAG_FASTDCT) < 0) {
+        LOGE("Error while decompressing: %s", tjGetErrorStr());
+        throwDecompressorException(env, tjGetErrorStr());
+    }
 
     tjDestroy(_jpegDecompressor);
 
     AndroidBitmap_unlockPixels(env, target);
-
-    (*env)->ReleaseByteArrayElements(env, source_, source, 0);
-
 }

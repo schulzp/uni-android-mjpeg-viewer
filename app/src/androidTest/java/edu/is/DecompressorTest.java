@@ -10,11 +10,11 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+
+import edu.is.jpeg.Decompressor;
 
 import static org.junit.Assert.*;
 
@@ -28,8 +28,8 @@ public class DecompressorTest {
     public void decompress() throws IOException {
         Decompressor decompressor = new Decompressor();
         Bitmap target = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
-        byte[] source = loadResource("sample.jpg");
-        decompressor.decompress(source, source.length, target);
+        ByteBuffer source = loadResource("sample.jpg");
+        decompressor.decompress(source, source.limit(), target);
 
         int pixel = target.getPixel(0, 0);
 
@@ -49,14 +49,14 @@ public class DecompressorTest {
         return new int[]{Color.alpha(pixel), Color.red(pixel), Color.green(pixel), Color.blue(pixel)};
     }
 
-    private byte[] loadResource(String s) throws IOException {
+    private ByteBuffer loadResource(String s) throws IOException {
         AssetFileDescriptor fd = InstrumentationRegistry.getContext().getResources().openRawResourceFd(edu.is.test.R.raw.sample);
         FileInputStream in = null;
         try {
             byte[] content = new byte[(int)fd.getLength()];
             FileInputStream inputStream = fd.createInputStream();
             inputStream.read(content);
-            return content;
+            return ByteBuffer.wrap(content);
         } finally {
             if (in != null) {
                 in.close();

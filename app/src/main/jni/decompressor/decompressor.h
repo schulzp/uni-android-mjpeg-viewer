@@ -13,6 +13,25 @@
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-JNIEXPORT void JNICALL Java_edu_is_Decompressor_decompress(JNIEnv *env, jobject instance, jbyteArray source_, jint length, jobject target);
+JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target);
+
+jint throwNoClassDefError(JNIEnv *env, char *msg) {
+    jclass exClass;
+    char *className = "java/lang/NoClassDefFoundError";
+    exClass = (*env)->FindClass(env, className);
+    return (*env)->ThrowNew(env, exClass, className);
+}
+
+jint throwDecompressorException(JNIEnv *env, char *message) {
+    jclass exClass;
+    char *className = "edu/is/jpeg/Decompressor$Exception";
+
+    exClass = (*env)->FindClass( env, className);
+    if (exClass == NULL) {
+        return throwNoClassDefError(env, className);
+    }
+
+    return (*env)->ThrowNew(env, exClass, message);
+}
 
 #endif //REMOTE_CAMERA_VIEWER_DECOMPRESSOR_H
