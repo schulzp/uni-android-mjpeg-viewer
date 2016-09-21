@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import java.nio.ByteBuffer;
 
 /**
- * Created by peter on 18/09/16.
+ * A native JPEG image decoder.
  */
 public class Decompressor {
 
@@ -21,6 +21,12 @@ public class Decompressor {
 
     }
 
-    native public void decompress(ByteBuffer source, int length, Bitmap target) throws Exception;
+    /**
+     * Decompresses the JPEG stored in {@code source} with a size of {@code length} into {@code target}.
+     * @param source the encoded JPEG image
+     * @param length the size of the JPEG image in bytes
+     * @param target the decoded JPEG image
+     */
+    native public void decompress(ByteBuffer source, int length, Bitmap target);
 
 }

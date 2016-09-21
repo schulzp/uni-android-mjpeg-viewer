@@ -13,7 +13,9 @@
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 jint throwNoClassDefError(JNIEnv *env, char *msg) {
     jclass exClass;
@@ -34,4 +36,9 @@ jint throwDecompressorException(JNIEnv *env, char *message) {
     return (*env)->ThrowNew(env, exClass, message);
 }
 
+JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target);
+
+#ifdef __cplusplus
+}
+#endif
 #endif //REMOTE_CAMERA_VIEWER_DECOMPRESSOR_H

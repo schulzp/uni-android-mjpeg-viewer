@@ -39,7 +39,6 @@ model {
         platformVersion 15
         ldFlags.add('')
         ldLibs.addAll(['log', 'jnigraphics'])
-        cppFlags.add('-I/Users/peter/Documents/git/uni/is/android/libjpeg-turbo/target/include')
     }
 
     android.productFlavors {
@@ -72,7 +71,6 @@ model {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:24.2.1'
 
     androidTestCompile 'com.android.support:support-annotations:24.2.1'
     androidTestCompile 'com.android.support.test:runner:0.5'

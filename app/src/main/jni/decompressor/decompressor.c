@@ -7,15 +7,13 @@
 #include "decompressor.h"
 #include "turbojpeg.h"
 
-JNIEXPORT jboolean JNICALL Java_edu_is_Decompressor_decompress(JNIEnv *env, jobject instance, jbyteArray source_, jint length, jobject target) {
+JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target) {
 
     LOGI("Decompressing");
 
-    jbyte *source = (*env)->GetDirectBufferAddress(env, source_);
-
     int jpegSubsamp, width, height, ret;
 
-    unsigned char* sourcePixelsPointer = (unsigned char*) source;
+    unsigned char* sourcePixelsPointer = (unsigned char*) (*env)->GetDirectBufferAddress(env, source);
     unsigned char* targetPixelsPointer;
 
     void* targetPixelsAddressPointer;

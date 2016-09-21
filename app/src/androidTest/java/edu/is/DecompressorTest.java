@@ -13,13 +13,14 @@ import org.junit.runner.RunWith;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import edu.is.jpeg.Decompressor;
 
 import static org.junit.Assert.*;
 
 /**
- * Created by peter on 18/09/16.
+ * Tests for {@link Decompressor}.
  */
 @RunWith(AndroidJUnit4.class)
 public class DecompressorTest {
@@ -28,7 +29,7 @@ public class DecompressorTest {
     public void decompress() throws IOException {
         Decompressor decompressor = new Decompressor();
         Bitmap target = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
-        ByteBuffer source = loadResource("sample.jpg");
+        ByteBuffer source = loadResource(edu.is.test.R.raw.sample);
         decompressor.decompress(source, source.limit(), target);
 
         int pixel = target.getPixel(0, 0);
@@ -45,18 +46,30 @@ public class DecompressorTest {
         assertThat("unexpected color value 1,1", asARGB(pixel), CoreMatchers.is(asARGB(0xff000000)));
     }
 
+    /**
+     * This is expected to fail since {@link Decompressor#decompress(ByteBuffer, int, Bitmap)} expects a direct buffer.
+     * @throws IOException
+     */
+    @Test(expected = Decompressor.Exception.class)
+    public void decompressThrowsException() throws IOException {
+        Decompressor decompressor = new Decompressor();
+        Bitmap target = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        ByteBuffer source = ByteBuffer.wrap(new byte[0]);
+        decompressor.decompress(source, source.limit(), target);
+    }
+
     private int[] asARGB(int pixel) {
         return new int[]{Color.alpha(pixel), Color.red(pixel), Color.green(pixel), Color.blue(pixel)};
     }
 
-    private ByteBuffer loadResource(String s) throws IOException {
-        AssetFileDescriptor fd = InstrumentationRegistry.getContext().getResources().openRawResourceFd(edu.is.test.R.raw.sample);
+    private ByteBuffer loadResource(int resource) throws IOException {
+        AssetFileDescriptor fd = InstrumentationRegistry.getContext().getResources().openRawResourceFd(resource);
         FileInputStream in = null;
         try {
-            byte[] content = new byte[(int)fd.getLength()];
-            FileInputStream inputStream = fd.createInputStream();
-            inputStream.read(content);
-            return ByteBuffer.wrap(content);
+            ByteBuffer content = ByteBuffer.allocateDirect((int)fd.getLength());
+            FileChannel channel = fd.createInputStream().getChannel();
+            channel.read(content);
+            return content;
         } finally {
             if (in != null) {
                 in.close();
