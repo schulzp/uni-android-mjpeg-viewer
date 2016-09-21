@@ -1,6 +1,5 @@
 package edu.is;
 
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
@@ -10,10 +9,8 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 import edu.is.jpeg.Decompressor;
 
@@ -29,7 +26,7 @@ public class DecompressorTest {
     public void decompress() throws IOException {
         Decompressor decompressor = new Decompressor();
         Bitmap target = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
-        ByteBuffer source = loadResource(edu.is.test.R.raw.sample);
+        ByteBuffer source = ResourceUtils.loadResource(edu.is.test.R.raw.sample, InstrumentationRegistry.getContext());
         decompressor.decompress(source, source.limit(), target);
 
         int pixel = target.getPixel(0, 0);
@@ -60,22 +57,6 @@ public class DecompressorTest {
 
     private int[] asARGB(int pixel) {
         return new int[]{Color.alpha(pixel), Color.red(pixel), Color.green(pixel), Color.blue(pixel)};
-    }
-
-    private ByteBuffer loadResource(int resource) throws IOException {
-        AssetFileDescriptor fd = InstrumentationRegistry.getContext().getResources().openRawResourceFd(resource);
-        FileInputStream in = null;
-        try {
-            ByteBuffer content = ByteBuffer.allocateDirect((int)fd.getLength());
-            FileChannel channel = fd.createInputStream().getChannel();
-            channel.read(content);
-            return content;
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-            fd.close();
-        }
     }
 
 }

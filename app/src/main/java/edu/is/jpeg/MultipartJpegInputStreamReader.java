@@ -43,6 +43,7 @@ public class MultipartJpegInputStreamReader {
         while (searcher.search(inputStream) > 0) {
             if (nextPattern == JPEG_START_OF_IMAGE) {
                 System.out.println("Hit start of image");
+                buffer.clear();
                 buffer.put(nextPattern);
                 searcher.setBuffer(buffer);
                 setNextPattern(JPEG_END_OF_IMAGE);
