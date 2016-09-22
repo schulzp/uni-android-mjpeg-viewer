@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.is.ResourceUtils;
@@ -41,7 +42,6 @@ public class MultipartJpegLoaderTest {
     public void stopServer() throws IOException {
         server.shutdown();
     }
-
 
     @Test
     public void loadInBackground() throws Exception {
@@ -73,16 +73,18 @@ public class MultipartJpegLoaderTest {
     }
 
     private MockResponse createMultipartMixedReplaceResponse(String boundary) {
-        Charset charset = Charset.forName("UTF-8");
+        Charset charset = Charset.forName("US-ASCII");
         Buffer buffer = new Buffer();
         try {
             BufferedOutputStream out = new BufferedOutputStream(buffer.outputStream());
-            byte[] boundaryLine = ("\n\n--" + boundary).getBytes(charset);
+            byte[] boundaryLine = ("\r\n--" + boundary).getBytes(charset);
             for (int i = 0; i < 3; ++i) {
                 out.write(boundaryLine);
-                out.write("Content-Type: image/jpeg\nContent-Length: 4\n\n".getBytes(charset));
+                out.write("\r\n".getBytes(charset));
                 out.write(ResourceUtils.loadResource(edu.is.test.R.raw.sample, context).array());
             }
+            out.write(boundaryLine);
+            out.write("--".getBytes(charset));
             out.flush();
         } catch (IOException e) {
             throw new RuntimeException("failed to write mock output", e);

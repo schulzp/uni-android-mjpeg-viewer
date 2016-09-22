@@ -1,4 +1,4 @@
-package edu.is;
+package edu.is.jpeg;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +15,6 @@ public class StreamSearcher {
     protected int[] borders_;
     
     protected ByteBuffer buffer;
-
-    // An upper bound on pattern length for searching. Results are undefined for longer patterns.
-    public static final int MAX_PATTERN_LENGTH = 1024;
 
     public StreamSearcher(byte[] pattern) {
         setPattern(pattern);

@@ -1,35 +1,45 @@
 package edu.is.jpeg;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-
-import edu.is.StreamSearcher;
+import java.nio.ByteOrder;
 
 /**
  * Consumes an input stream assuming it a {@code multipart/x-mixed-replace} stream where each section is a JPEG image.
  */
 public class MultipartJpegInputStreamReader {
-    
-    /**
-     * Start sequence of a JPEG image.
-     * See https://de.wikipedia.org/wiki/JPEG_File_Interchange_Format
-     */
-    public static final byte[] JPEG_START_OF_IMAGE = new byte[] { (byte) 0xff, (byte) 0xd8 };
-    
-    /**
-     * End sequence of a JPEG image.
-     * See https://de.wikipedia.org/wiki/JPEG_File_Interchange_Format
-     */
-    public static final byte[] JPEG_END_OF_IMAGE = new byte[] { (byte) 0xff, (byte) 0xd9 };
-    
+
+    private static final byte[] buildPattern(byte[]...parts) {
+        int size = 0;
+        for (byte[] part : parts) {
+            size += part.length;
+        }
+        ByteArrayOutputStream builder = new ByteArrayOutputStream(size);
+        for (byte[] part : parts) {
+            try {
+                builder.write(part);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to build pattern", e);
+            }
+        }
+        return builder.toByteArray();
+    }
+
+    private static final byte[] CRLF = "\r\n".getBytes();
+    private static final byte[] JPEG_SOF = buildPattern(CRLF, new byte[] {(byte) 0xFF, (byte) 0xD8});
+    private static final byte[] JPEG_EOF = buildPattern(new byte[] {(byte) 0xFF, (byte) 0xD9}, CRLF);
+
     private final StreamSearcher searcher;
     private final InputStream inputStream;
+    private final byte[] boundaryPattern;
 
     private byte[] nextPattern;
-    
+
     public MultipartJpegInputStreamReader(InputStream inputStream, byte[] boundaryPattern) {
-        this.searcher = new StreamSearcher(boundaryPattern);
+        this.boundaryPattern = buildPattern("--".getBytes(), boundaryPattern);
+        this.searcher = new StreamSearcher(buildPattern(CRLF, this.boundaryPattern));
         this.nextPattern = boundaryPattern;
         this.inputStream = inputStream;
     }
@@ -41,21 +51,21 @@ public class MultipartJpegInputStreamReader {
      */
     public int read(ByteBuffer buffer) throws IOException {
         while (searcher.search(inputStream) > 0) {
-            if (nextPattern == JPEG_START_OF_IMAGE) {
+            if (nextPattern == JPEG_SOF) {
                 System.out.println("Hit start of image");
                 buffer.clear();
-                buffer.put(nextPattern);
+                buffer.put(JPEG_SOF, CRLF.length, JPEG_SOF.length - CRLF.length);
                 searcher.setBuffer(buffer);
-                setNextPattern(JPEG_END_OF_IMAGE);
-            } else if (nextPattern == JPEG_END_OF_IMAGE) {                
+                setNextPattern(JPEG_EOF);
+            } else if (nextPattern == JPEG_EOF) {
                 System.out.println("Hit end of image: " + buffer.position());
-                                              
-                setNextPattern(JPEG_START_OF_IMAGE);
+                setNextPattern(boundaryPattern);
                 searcher.setBuffer(null);
+                buffer.limit(buffer.position() - CRLF.length);
                 return buffer.position();
             } else {
                 System.out.println("Hit boundary");
-                setNextPattern(JPEG_START_OF_IMAGE);
+                setNextPattern(JPEG_SOF);
                 searcher.setBuffer(null);
             }
         }

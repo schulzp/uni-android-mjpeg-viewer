@@ -86,9 +86,8 @@ public class MultipartJpegLoader extends AsyncTaskLoader<IOException> {
                     try {
                         synchronized (mDecompressor) {
                             if (mBitmap != null) {
-                                int length = buffer.position();
-                                buffer.clear();
-                                mDecompressor.decompress(buffer, length, mBitmap);
+                                buffer.rewind();
+                                mDecompressor.decompress(buffer, buffer.limit(), mBitmap);
                                 jpegLoaded(mBitmap);
                             }
                         }
