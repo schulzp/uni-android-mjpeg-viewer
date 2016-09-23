@@ -18,8 +18,15 @@ JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, job
 
     void* targetPixelsAddressPointer;
 
+    if (sourcePixelsPointer == NULL) {
+        throwIllegalArgumentException(env, "Source is not a direct buffer");
+        return;
+    }
+
     if ((ret = AndroidBitmap_lockPixels(env, target, &targetPixelsAddressPointer)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+        throwUnsupportedOperationException(env, "Unable to lock target bitmap pixels, see log for details");
+        return;
     }
 
     targetPixelsPointer = (unsigned char*) targetPixelsAddressPointer;

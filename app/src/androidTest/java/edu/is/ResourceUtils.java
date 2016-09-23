@@ -3,8 +3,12 @@ package edu.is;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -14,19 +18,26 @@ import java.nio.channels.FileChannel;
 public class ResourceUtils {
 
     public static ByteBuffer loadResource(int resource, Context context) throws IOException {
-        AssetFileDescriptor fd = context.getResources().openRawResourceFd(resource);
-        FileInputStream in = null;
+        InputStream source = openResource(resource, context);
         try {
-            ByteBuffer content = ByteBuffer.allocateDirect((int)fd.getLength());
-            FileChannel channel = fd.createInputStream().getChannel();
-            channel.read(content);
-            return content;
+            ByteArrayOutputStream cache = new ByteArrayOutputStream(10000);
+            IOUtils.copy(source, cache);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(cache.size());
+            buffer.put(cache.toByteArray());
+            buffer.clear();
+            return buffer;
         } finally {
-            if (in != null) {
-                in.close();
-            }
-            fd.close();
+            source.close();
         }
+    }
+
+    public static InputStream openResource(int resource, Context context) throws IOException {
+        return context.getResources().openRawResource(resource);
+    }
+
+    public static FileInputStream openResourceFile(int resource, Context context) throws IOException {
+        AssetFileDescriptor fd = context.getResources().openRawResourceFd(resource);
+        return fd.createInputStream();
     }
 
 }

@@ -36,6 +36,30 @@ jint throwDecompressorException(JNIEnv *env, char *message) {
     return (*env)->ThrowNew(env, exClass, message);
 }
 
+jint throwIllegalArgumentException(JNIEnv *env, char *message) {
+    jclass exClass;
+    char *className = "java/lang/IllegalArgumentException";
+
+    exClass = (*env)->FindClass( env, className);
+    if (exClass == NULL) {
+        return throwNoClassDefError(env, className);
+    }
+
+    return (*env)->ThrowNew(env, exClass, message);
+}
+
+jint throwUnsupportedOperationException(JNIEnv *env, char *message) {
+    jclass exClass;
+    char *className = "java/lang/UnsupportedOperationException";
+
+    exClass = (*env)->FindClass( env, className);
+    if (exClass == NULL) {
+        return throwNoClassDefError(env, className);
+    }
+
+    return (*env)->ThrowNew(env, exClass, message);
+}
+
 JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target);
 
 #ifdef __cplusplus

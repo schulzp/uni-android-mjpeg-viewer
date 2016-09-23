@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 
 /**
  * Consumes an input stream assuming it a {@code multipart/x-mixed-replace} stream where each section is a JPEG image.
@@ -27,9 +28,13 @@ public class MultipartJpegInputStreamReader {
         return builder.toByteArray();
     }
 
-    private static final byte[] CRLF = "\r\n".getBytes();
+    private static final Charset CHARSET = Charset.forName("UTF-8");
+    private static final byte[] CRLF = "\r\n".getBytes(CHARSET);
     private static final byte[] JPEG_SOF = buildPattern(CRLF, new byte[] {(byte) 0xFF, (byte) 0xD8});
     private static final byte[] JPEG_EOF = buildPattern(new byte[] {(byte) 0xFF, (byte) 0xD9}, CRLF);
+
+    private static final byte[] CONTENT_LENGHT_HEADER_START = "Content-Length: ".getBytes(CHARSET);
+    private static final byte[] CONTENT_LENGHT_HEADER_END = CRLF;
 
     private final StreamSearcher searcher;
     private final InputStream inputStream;

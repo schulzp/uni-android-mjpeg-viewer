@@ -43,15 +43,34 @@ public class DecompressorTest {
         assertThat("unexpected color value 1,1", asARGB(pixel), CoreMatchers.is(asARGB(0xff000000)));
     }
 
+    @Test
+    public void decompressMediumSizedImage() throws IOException {
+        Decompressor decompressor = new Decompressor();
+        Bitmap target = Bitmap.createBitmap(600, 400, Bitmap.Config.ARGB_8888);
+        ByteBuffer source = ResourceUtils.loadResource(edu.is.test.R.raw.sample600x400, InstrumentationRegistry.getContext());
+        decompressor.decompress(source, source.limit(), target);
+    }
+
     /**
-     * This is expected to fail since {@link Decompressor#decompress(ByteBuffer, int, Bitmap)} expects a direct buffer.
-     * @throws IOException
+     * Expected to fail since {@link Decompressor#decompress(ByteBuffer, int, Bitmap)} expects a direct buffer.
      */
-    @Test(expected = Decompressor.Exception.class)
-    public void decompressThrowsException() throws IOException {
+    @Test(expected = IllegalArgumentException.class)
+    public void decompressExpectsDirectBuffer() throws IOException {
         Decompressor decompressor = new Decompressor();
         Bitmap target = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
         ByteBuffer source = ByteBuffer.wrap(new byte[0]);
+        decompressor.decompress(source, source.limit(), target);
+    }
+
+    /**
+     * Expected to fail since {@link Decompressor#decompress(ByteBuffer, int, Bitmap)} expects a JPEG.
+     */
+    @Test(expected = Decompressor.Exception.class)
+    public void decompressExpectsJpeg() throws IOException {
+        Decompressor decompressor = new Decompressor();
+        Bitmap target = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        ByteBuffer source = ByteBuffer.allocateDirect(2);
+        source.put((byte) 0xff).put((byte) 0x00);
         decompressor.decompress(source, source.limit(), target);
     }
 

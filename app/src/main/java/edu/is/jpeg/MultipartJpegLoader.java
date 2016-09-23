@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TimingLogger;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -79,15 +80,19 @@ public class MultipartJpegLoader extends AsyncTaskLoader<IOException> {
             Matcher boundaryMatcher = MULTIPART_BOUNDARY_PATTERN.matcher(urlConnection.getHeaderField("Content-Type"));
             if (boundaryMatcher.matches()) {
                 byte[] boundaryPattern = boundaryMatcher.group(1).getBytes(Charset.forName("UTF-8"));
-                ByteBuffer buffer = ByteBuffer.allocateDirect(mConfig.getInt(BUNDLE_KEY_BUFFER_SIZE, 20000));
+                ByteBuffer buffer = ByteBuffer.allocateDirect(mConfig.getInt(BUNDLE_KEY_BUFFER_SIZE, 40000));
                 MultipartJpegInputStreamReader reader = new MultipartJpegInputStreamReader(urlConnection.getInputStream(), boundaryPattern);
+
+                final TimingLogger timings = new TimingLogger("Timing", "load");
 
                 while (!mCanceled && reader.read(buffer) > 0) {
                     try {
+                        timings.addSplit("read frame");
                         synchronized (mDecompressor) {
                             if (mBitmap != null) {
                                 buffer.rewind();
                                 mDecompressor.decompress(buffer, buffer.limit(), mBitmap);
+                                timings.addSplit("decompressed frame");
                                 jpegLoaded(mBitmap);
                             }
                         }
@@ -96,6 +101,8 @@ public class MultipartJpegLoader extends AsyncTaskLoader<IOException> {
                         return new IOException("Failed to decompress JPEG frame", e);
                     }
                 }
+
+                timings.dumpToLog();
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Failed to load JPEG frame", e);

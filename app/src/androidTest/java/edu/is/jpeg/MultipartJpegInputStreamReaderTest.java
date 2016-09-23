@@ -65,25 +65,42 @@ public class MultipartJpegInputStreamReaderTest {
                 frames++;
             }
         } catch (BufferOverflowException e) {
-            throw new IOException("Failed to write frame " + frames + " into " + target, e);
+            target.rewind();
+            throw new IOException("Failed to write frame " + frames + " into " + target + "\n" + toString(target, -1), e);
         }
         assertThat("Unexpected number of frames", frames, CoreMatchers.is(2));
     }
 
     private InputStream createMultipartInputStream(int resource, int repetitions, byte[] boundary) throws IOException {
+        ByteBuffer resourceBuffer = ResourceUtils.loadResource(resource, context);
+
         final byte[] crlf = "\r\n".getBytes();
         final byte[] dashes = "--".getBytes();
-        ByteBuffer resourceBuffer = ResourceUtils.loadResource(resource, context);
-        int capacity = repetitions * resourceBuffer.limit()
-                + (repetitions + 1)
-                * (boundary.length + dashes.length + crlf.length * 2) + 2 + dashes.length;
+        final byte[] contentTypeHeader = "Content-Type: image/jpeg".getBytes();
+        final byte[] contentLengthHeader = ("Content-Length: " + resourceBuffer.limit()).getBytes();
+
+        int boundaryLength = crlf.length
+                + dashes.length
+                + boundary.length;
+        int partLength = boundaryLength
+                + crlf.length
+                + contentTypeHeader.length
+                + crlf.length
+                + contentLengthHeader.length
+                + crlf.length
+                + crlf.length
+                + resourceBuffer.limit();
+
+        int capacity = repetitions * partLength + boundaryLength + dashes.length;
         final ByteBuffer inputStreamBuffer = ByteBuffer.allocateDirect(capacity);
-        inputStreamBuffer.put((byte) 0x00);
+
         for (int i = 0; i < repetitions; ++i) {
             resourceBuffer.rewind();
             inputStreamBuffer.put(crlf);
             inputStreamBuffer.put(dashes);
-            inputStreamBuffer.put(boundary);
+            inputStreamBuffer.put(boundary).put(crlf);
+            inputStreamBuffer.put(contentTypeHeader).put(crlf);
+            inputStreamBuffer.put(contentLengthHeader).put(crlf);
             inputStreamBuffer.put(crlf);
             inputStreamBuffer.put(resourceBuffer);
         }
@@ -91,7 +108,6 @@ public class MultipartJpegInputStreamReaderTest {
         inputStreamBuffer.put(dashes);
         inputStreamBuffer.put(boundary);
         inputStreamBuffer.put(dashes);
-        inputStreamBuffer.put((byte) 0x00);
         inputStreamBuffer.rewind();
 
         assertThat("Unexpected input buffer limit", inputStreamBuffer.limit(), CoreMatchers.is(capacity));
