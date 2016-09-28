@@ -1,5 +1,6 @@
 package edu.is.jpeg;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +47,7 @@ public class MultipartJpegInputStreamReader {
         this.boundaryPattern = buildPattern("--".getBytes(), boundaryPattern);
         this.searcher = new StreamSearcher(buildPattern(CRLF, this.boundaryPattern));
         this.nextPattern = boundaryPattern;
-        this.inputStream = inputStream;
+        this.inputStream = new BufferedInputStream(inputStream, 2048);
     }
 
     /**
@@ -57,19 +58,19 @@ public class MultipartJpegInputStreamReader {
     public int read(ByteBuffer buffer) throws IOException {
         while (searcher.search(inputStream) > 0) {
             if (nextPattern == JPEG_SOF) {
-                System.out.println("Hit start of image");
+                //System.out.println("Hit start of image");
                 buffer.clear();
                 buffer.put(JPEG_SOF, CRLF.length, JPEG_SOF.length - CRLF.length);
                 searcher.setBuffer(buffer);
                 setNextPattern(JPEG_EOF);
             } else if (nextPattern == JPEG_EOF) {
-                System.out.println("Hit end of image: " + buffer.position());
+                //System.out.println("Hit end of image: " + buffer.position());
                 setNextPattern(boundaryPattern);
                 searcher.setBuffer(null);
                 buffer.limit(buffer.position() - CRLF.length);
                 return buffer.position();
             } else {
-                System.out.println("Hit boundary");
+                //System.out.println("Hit boundary");
                 setNextPattern(JPEG_SOF);
                 searcher.setBuffer(null);
             }

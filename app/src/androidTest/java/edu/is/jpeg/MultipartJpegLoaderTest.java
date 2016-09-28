@@ -3,6 +3,7 @@ package edu.is.jpeg;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.util.TimingLogger;
@@ -15,6 +16,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -82,12 +86,32 @@ public class MultipartJpegLoaderTest {
         server.enqueue(response);
         MultipartJpegLoader loader = createLoader(server.url("/").toString());
         final AtomicInteger numberOfFrames = new AtomicInteger(0);
-        loader.targetChanged(640, 480);
+        loader.targetChanged(200, 100);
         loader.setCallbacks(new MultipartJpegLoader.Callbacks() {
 
             @Override
             public void jpegLoaded(Bitmap bitmap) {
+
                 numberOfFrames.getAndIncrement();
+
+                File file = new File(Environment.getExternalStorageDirectory(), "frame-" + numberOfFrames.get() + ".jpg");
+                System.out.println("Writing to " + file);
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException("Failed to write bitmap to file " + file, e);
+                } finally {
+                    if (fileOutputStream != null) {
+                        try {
+                            fileOutputStream.close();
+                        } catch (IOException e) {
+                            throw new RuntimeException("Failed to close file " + file, e);
+                        }
+                    }
+                }
+
             }
 
         });

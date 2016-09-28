@@ -9,9 +9,7 @@
 
 JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target) {
 
-    LOGI("Decompressing");
-
-    int jpegSubsamp, width, height, ret;
+    int ret;
 
     unsigned char* sourcePixelsPointer = (unsigned char*) (*env)->GetDirectBufferAddress(env, source);
     unsigned char* targetPixelsPointer;
@@ -23,6 +21,8 @@ JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, job
         return;
     }
 
+    AndroidBitmapInfo targetInfo;
+    AndroidBitmap_getInfo(env, target, &targetInfo);
     if ((ret = AndroidBitmap_lockPixels(env, target, &targetPixelsAddressPointer)) < 0) {
         LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
         throwUnsupportedOperationException(env, "Unable to lock target bitmap pixels, see log for details");
@@ -33,11 +33,7 @@ JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, job
 
     tjhandle _jpegDecompressor = tjInitDecompress();
 
-    tjDecompressHeader2(_jpegDecompressor, sourcePixelsPointer, length, &width, &height, &jpegSubsamp);
-
-    LOGD("Width %d, Height: %d, Sub-Samples: %d", width, height, jpegSubsamp);
-
-    if (tjDecompress2(_jpegDecompressor, sourcePixelsPointer, length, targetPixelsPointer, width, 0/*pitch*/, height, TJPF_RGBX, TJFLAG_FASTDCT) < 0) {
+    if (tjDecompress2(_jpegDecompressor, sourcePixelsPointer, length, targetPixelsPointer, targetInfo.width, 0/*pitch*/, targetInfo.height, TJPF_RGBX, TJFLAG_FASTDCT) < 0) {
         LOGE("Error while decompressing: %s", tjGetErrorStr());
         throwDecompressorException(env, tjGetErrorStr());
     }

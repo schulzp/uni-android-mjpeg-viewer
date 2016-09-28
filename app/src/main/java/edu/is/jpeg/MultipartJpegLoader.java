@@ -64,9 +64,15 @@ public class MultipartJpegLoader extends AsyncTaskLoader<IOException> {
     }
 
     @Override
-    public boolean cancelLoad() {
+    protected void onReset() {
+        mCanceled = false;
+        super.onReset();
+    }
+
+    @Override
+    protected boolean onCancelLoad() {
         mCanceled = true;
-        return super.cancelLoad();
+        return super.onCancelLoad();
     }
 
     @Override

@@ -3,18 +3,33 @@ package edu.is.ui;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Loader;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import edu.is.R;
 import edu.is.jpeg.MultipartJpegLoader;
@@ -30,6 +45,12 @@ public class MultipartJpegActivity extends Activity implements SurfaceHolder.Cal
     private SurfaceHolder mSurfaceHolder;
 
     private Paint mPaint = new Paint();
+    private Rect mTargetRect;
+    private Rect mSourceRect;
+
+    private long mLastImageMilliseconds = 0;
+    private int mImagesSinceLastRefresh = 0;
+    private double mFPS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,20 +70,47 @@ public class MultipartJpegActivity extends Activity implements SurfaceHolder.Cal
         mSurfaceHolder = surfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
 
-        Bundle loaderConfiguration = new Bundle();
-        loaderConfiguration.putString(MultipartJpegLoader.BUNDLE_KEY_URL, "http://192.168.1.111:8080/video");
-        initLoader(loaderConfiguration);
+        try {
+            Bundle loaderConfiguration = new Bundle();
+            loaderConfiguration.putString(MultipartJpegLoader.BUNDLE_KEY_URL, determineUrl().toString());
+            initLoader(loaderConfiguration);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize loader", e);
+        }
     }
+
+    private URL determineUrl() throws IOException {
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+        String host = "";
+        if (wifiInfo.getSSID().equals("Mikrowellenschleuder")) {
+            DhcpInfo dhcpInfo = wifiManager.getDhcpInfo();
+            byte[] address = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(dhcpInfo.ipAddress).array();
+            address[3] = 0x01;
+            host = InetAddress.getByAddress(address).getHostAddress();
+            Log.i(LOG_TAG, "Connecting to gateway at " + host);
+        }
+        return new URL("http", host, 8080, "/video");
+    }
+
+
 
     @Override
     public void surfaceChanged(SurfaceHolder sh, int f, int w, int h) {
-        getLoader().targetChanged(w, h);
+        getLoader().targetChanged(320, 240);
+        mSourceRect = new Rect(0, 0, 320, 240);
+        mTargetRect = new Rect(
+                (w - mSourceRect.width()) / 2,
+                (h - mSourceRect.height()) / 2, w, h);
+
+        mLastImageMilliseconds = System.currentTimeMillis();
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder sh) {
         getLoader().setCallbacks(this);
-        getLoader().startLoading();
+        getLoader().forceLoad();
     }
 
     @Override
@@ -73,9 +121,18 @@ public class MultipartJpegActivity extends Activity implements SurfaceHolder.Cal
     @Override
     public void jpegLoaded(Bitmap bitmap) {
         synchronized (mSurfaceHolder) {
+            if (mImagesSinceLastRefresh++ >= 10) {
+                mFPS = mImagesSinceLastRefresh * (1000d / (System.currentTimeMillis() - mLastImageMilliseconds));
+                mImagesSinceLastRefresh = 0;
+                mLastImageMilliseconds = System.currentTimeMillis();
+            }
             Canvas canvas = mSurfaceHolder.lockCanvas();
+
             try {
-                canvas.drawBitmap(bitmap, 0, 0, mPaint);
+                canvas.drawBitmap(bitmap, mSourceRect, mTargetRect, mPaint);
+                //mPaint.setColor(Color.RED);
+                //mPaint.setTextSize(20);
+                //canvas.drawText("FPS: " + Math.floor(mFPS), 20, 50, mPaint);
             } finally {
                 mSurfaceHolder.unlockCanvasAndPost(canvas);
             }
