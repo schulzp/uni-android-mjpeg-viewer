@@ -60,7 +60,11 @@ jint throwUnsupportedOperationException(JNIEnv *env, char *message) {
     return (*env)->ThrowNew(env, exClass, message);
 }
 
+jint JNI_OnLoad(JavaVM *vm, void *reserved);
+
 JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target);
+
+void JNI_OnUnload(JavaVM *vm, void *reserved);
 
 #ifdef __cplusplus
 }

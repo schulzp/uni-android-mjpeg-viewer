@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.TimingLogger;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -49,6 +50,20 @@ public class DecompressorTest {
         Bitmap target = Bitmap.createBitmap(600, 400, Bitmap.Config.ARGB_8888);
         ByteBuffer source = ResourceUtils.loadResource(edu.is.test.R.raw.sample600x400, InstrumentationRegistry.getContext());
         decompressor.decompress(source, source.limit(), target);
+    }
+
+    @Test
+    public void decompressMediumSizedImageSeveralTimes() throws IOException {
+        Decompressor decompressor = new Decompressor();
+        Bitmap target = Bitmap.createBitmap(600, 400, Bitmap.Config.ARGB_8888);
+        ByteBuffer source = ResourceUtils.loadResource(edu.is.test.R.raw.sample600x400, InstrumentationRegistry.getContext());
+
+        TimingLogger logger = new TimingLogger("Timing", "decompress");
+        for (int i = 0; i < 100; ++i) {
+            decompressor.decompress(source, source.limit(), target);
+            logger.addSplit("decompress");
+        }
+        logger.dumpToLog();
     }
 
     /**

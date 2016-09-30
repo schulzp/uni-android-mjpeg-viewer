@@ -7,6 +7,13 @@
 #include "decompressor.h"
 #include "turbojpeg.h"
 
+tjhandle _jpegDecompressor;
+
+jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    _jpegDecompressor = tjInitDecompress();
+    return JNI_VERSION_1_6;
+}
+
 JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, jobject instance, jobject source, jint length, jobject target) {
 
     int ret;
@@ -31,14 +38,14 @@ JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, job
 
     targetPixelsPointer = (unsigned char*) targetPixelsAddressPointer;
 
-    tjhandle _jpegDecompressor = tjInitDecompress();
-
     if (tjDecompress2(_jpegDecompressor, sourcePixelsPointer, length, targetPixelsPointer, targetInfo.width, 0/*pitch*/, targetInfo.height, TJPF_RGBX, TJFLAG_FASTDCT) < 0) {
         LOGE("Error while decompressing: %s", tjGetErrorStr());
         throwDecompressorException(env, tjGetErrorStr());
     }
 
-    tjDestroy(_jpegDecompressor);
-
     AndroidBitmap_unlockPixels(env, target);
+}
+
+void JNI_OnUnload(JavaVM *vm, void *reserved) {
+    tjDestroy(_jpegDecompressor);
 }
