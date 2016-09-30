@@ -4,7 +4,7 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 
-#include "decompressor.h"
+#include "decompressor.hpp"
 #include "turbojpeg.h"
 
 tjhandle _jpegDecompressor;
@@ -18,7 +18,7 @@ JNIEXPORT void JNICALL Java_edu_is_jpeg_Decompressor_decompress(JNIEnv *env, job
 
     int ret;
 
-    unsigned char* sourcePixelsPointer = (unsigned char*) (*env)->GetDirectBufferAddress(env, source);
+    unsigned char* sourcePixelsPointer = (unsigned char*) env->GetDirectBufferAddress(source);
     unsigned char* targetPixelsPointer;
 
     void* targetPixelsAddressPointer;

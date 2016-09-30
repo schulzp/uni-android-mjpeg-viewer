@@ -20,44 +20,44 @@ extern "C" {
 jint throwNoClassDefError(JNIEnv *env, char *msg) {
     jclass exClass;
     char *className = "java/lang/NoClassDefFoundError";
-    exClass = (*env)->FindClass(env, className);
-    return (*env)->ThrowNew(env, exClass, className);
+    exClass = env->FindClass(className);
+    return env->ThrowNew(exClass, className);
 }
 
 jint throwDecompressorException(JNIEnv *env, char *message) {
     jclass exClass;
     char *className = "edu/is/jpeg/Decompressor$Exception";
 
-    exClass = (*env)->FindClass( env, className);
+    exClass = env->FindClass(className);
     if (exClass == NULL) {
         return throwNoClassDefError(env, className);
     }
 
-    return (*env)->ThrowNew(env, exClass, message);
+    return env->ThrowNew(exClass, message);
 }
 
 jint throwIllegalArgumentException(JNIEnv *env, char *message) {
     jclass exClass;
     char *className = "java/lang/IllegalArgumentException";
 
-    exClass = (*env)->FindClass( env, className);
+    exClass = env->FindClass(className);
     if (exClass == NULL) {
         return throwNoClassDefError(env, className);
     }
 
-    return (*env)->ThrowNew(env, exClass, message);
+    return env->ThrowNew(exClass, message);
 }
 
 jint throwUnsupportedOperationException(JNIEnv *env, char *message) {
     jclass exClass;
     char *className = "java/lang/UnsupportedOperationException";
 
-    exClass = (*env)->FindClass( env, className);
+    exClass = env->FindClass(className);
     if (exClass == NULL) {
         return throwNoClassDefError(env, className);
     }
 
-    return (*env)->ThrowNew(env, exClass, message);
+    return env->ThrowNew(exClass, message);
 }
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved);
