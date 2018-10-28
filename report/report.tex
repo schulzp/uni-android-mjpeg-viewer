@@ -1,0 +1,88 @@
+% !TeX program = xelatex
+% !TeX encoding = UTF-8 Unicode
+\documentclass{scrartcl}% siehe <http://www.komascript.de>
+\usepackage{fontspec}% Schriftumschaltung mit den nativen XeTeX-Anweisungen
+                     % vornehmen. Voreinstellung: Latin Modern
+
+% Hurenkinder und Schusterjungen verhindern
+\clubpenalty10000
+\widowpenalty10000
+\displaywidowpenalty=10000
+
+\usepackage{fontspec,xltxtra,xunicode,xspace,microtype}
+\defaultfontfeatures{Ligatures=TeX}
+
+\setromanfont[Ligatures={Common,TeX}]{Minion Pro}
+\setsansfont[Scale=MatchLowercase]{Myriad Pro}
+
+\usepackage{polyglossia}% Sprachumschaltung
+\usepackage[autostyle]{csquotes}
+\usepackage{caption,subcaption}
+\usepackage{pstricks,graphicx}
+\usepackage[percent]{overpic}
+\usepackage{color}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{siunitx,amssymb}
+\usepackage[titletoc,title]{appendix}
+
+\usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}
+\bibliography{report}
+
+\newcommand\ie{\mbox{i.\,e.}\xspace}
+\newcommand\eg{\mbox{e.\,g.}\xspace}
+\newcommand\cf{\mbox{cf.}\xspace}
+\newcommand{\comment}[1]{\marginpar{\pdfannot width 4in height .5in depth 8pt {/Subtype /Text /Contents (\detokenize{#1})}}}
+\newcommand\secref[1]{\mbox{Sect.}~\ref{#1}}
+\newcommand\figref[1]{\mbox{Fig.}~\ref{#1}}
+\newcommand\tabref[1]{\mbox{Tab.}~\ref{#1}}
+\newcommand\algref[1]{\mbox{Alg.}~\ref{#1}}
+
+% color
+\definecolor{source}{gray}{.5}
+
+% hyperref
+\urlstyle{same}
+
+% polyglossia
+\setdefaultlanguage{english}% Voreingestellte Dokumentsprache: Deutsch
+
+% pictures
+\newcommand{\rbox}[3]{
+  \put(#1,#2){\makebox(100,100)[rb]{#3}}
+}
+
+\begin{document}
+% ----------------------------------------------------------------------------
+% Titel (erst nach \begin{document}, damit babel bereits voll aktiv ist:
+%\titlehead{Universität Bremen, Image Understanding, SoSe 2015}% optional
+\subject{\normalfont Universität Bremen $\cdot$ Independent Study $\cdot$ Sommersemester 2016}% optional
+\title{Technology Supporting Imagery in Sport Climbing}% obligatorisch
+\subtitle{A Preliminary Study Investigating Perception and Acceptance\\of Technology-Aided Methods to Learn Imagery}% optional
+\author{Peter Schulz}% obligatorisch
+%\date{31.8.2015}% sinnvoll
+\publishers{}% optional
+\maketitle% verwendet die zuvor gemachte Angaben zur Gestaltung eines Titels
+% ----------------------------------------------------------------------------
+% Inhaltsverzeichnis:
+%\tableofcontents
+% ----------------------------------------------------------------------------
+% Inhalt:
+
+\input{content.tex}
+
+\printbibliography
+
+\begin{appendices}
+\input{appendix.tex}
+\end{appendices}
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-engine: xetex
+%%% TeX-PDF-mode: t
+%%% coding: utf-8
+%%% TeX-master: t
+%%% End: 

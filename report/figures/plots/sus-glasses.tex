@@ -1,0 +1,11 @@
+\documentclass{article}
+\providecommand{\gnuplotexe}{/opt/local/bin/gnuplot}
+\usepackage[noshell,subfolder]{gnuplottex}
+\begin{document}
+\begin{figure}
+  \centering
+  \gnuplotloadfile[terminal=pdf,terminaloptions={color font "Garamond,12" size 15cm,5cm}]{sus-glasses.gnuplot}
+  \caption{This is a simple example using the jpeg-terminal.}
+  \label{pic:jpeg}
+\end{figure}
+\end{document}

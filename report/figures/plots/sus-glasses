@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<jGNUplot_config>
+    <version>0.1.2</version>
+    <plot_tile>System Usability Scale</plot_tile>
+    <plot_type>TWO_DIM</plot_type>
+    <max_x_range/>
+    <min_x_range/>
+    <max_y_range/>
+    <min_y_range/>
+    <min_z_range/>
+    <min_z_range/>
+    <x_label/>
+    <y_label/>
+    <z_label/>
+    <logscale_x_axis>false</logscale_x_axis>
+    <logscale_y_axis>false</logscale_y_axis>
+    <logscale_z_axis>false</logscale_z_axis>
+    <pre_plot_string/>
+    <datasets/>
+    <labels/>
+    <variables/>
+</jGNUplot_config>
